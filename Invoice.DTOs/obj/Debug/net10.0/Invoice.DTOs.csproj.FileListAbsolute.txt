@@ -1,0 +1,13 @@
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\bin\Debug\net10.0\Invoice.DTOs.deps.json
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\bin\Debug\net10.0\Invoice.DTOs.dll
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\bin\Debug\net10.0\Invoice.DTOs.pdb
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\obj\Debug\net10.0\Invoice.DTOs.GeneratedMSBuildEditorConfig.editorconfig
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\obj\Debug\net10.0\Invoice.DTOs.AssemblyInfoInputs.cache
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\obj\Debug\net10.0\Invoice.DTOs.AssemblyInfo.cs
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\obj\Debug\net10.0\Invoice.DTOs.csproj.CoreCompileInputs.cache
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\obj\Debug\net10.0\Invoice.DTOs.sourcelink.json
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\obj\Debug\net10.0\Invoice.DTOs.dll
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\obj\Debug\net10.0\refint\Invoice.DTOs.dll
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\obj\Debug\net10.0\Invoice.DTOs.pdb
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\obj\Debug\net10.0\ref\Invoice.DTOs.dll
+D:\IMSAssessment1\Invoice Management Systems\Invoice.DTOs\obj\Debug\net10.0\Invoice..FDAF9731.Up2Date
