@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Invoice.DTOs")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8b2357fabf2be467b6c738cc48580aad9bcea2df")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+14eeab896f4ff159ee8660bbcfa6693e15cf062c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Invoice.DTOs")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Invoice.DTOs")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -14,7 +14,7 @@ public class CategoryRepositories : ICategoryRepository
     {
         _dbContext = dbContext;
     }
-    public async Task<int> AddAsync(CategoryEntity category)
+    public async Task<int> AddAsync(CategoryEntity entity)
 
     {
 
@@ -40,12 +40,12 @@ public class CategoryRepositories : ICategoryRepository
 
         command.Parameters.Add(
 
-            new SqlParameter("@Code", category.Code));
+            new SqlParameter("@Code", entity.Code));
 
 
         command.Parameters.Add(
 
-            new SqlParameter("@Name", category.Name));
+            new SqlParameter("@Name", entity.Name));
 
 
         command.Parameters.Add(
@@ -54,7 +54,7 @@ public class CategoryRepositories : ICategoryRepository
 
                 "@Description",
 
-                (object?)category.Description ?? DBNull.Value));
+                (object?)entity.Description ?? DBNull.Value));
 
 
         command.Parameters.Add(
@@ -63,8 +63,8 @@ public class CategoryRepositories : ICategoryRepository
 
                 "@IsActive",
 
-                (object?)category.IsActive ?? DBNull.Value));
-        command.Parameters.Add(new SqlParameter("@IsDeleted", (object?)category.IsDeleted ?? DBNull.Value));
+                (object?)entity.IsActive ?? DBNull.Value));
+        command.Parameters.Add(new SqlParameter("@IsDeleted", (object?)entity.IsDeleted ?? DBNull.Value));
 
 
         var result = await command.ExecuteScalarAsync();
@@ -122,12 +122,27 @@ public class CategoryRepositories : ICategoryRepository
             .ToListAsync();
     }
 
+
     public async Task<bool> DeleteAsync(int id)
     {
-        var affectedRows = await _dbContext.Database.ExecuteSqlRawAsync(
-            "EXEC sp_Category_Delete @Id",
+        var connection = _dbContext.Database.GetDbConnection();
+
+        if (connection.State != ConnectionState.Open)
+            await connection.OpenAsync();
+
+        using var command = connection.CreateCommand();
+
+        command.CommandText = "dbo.sp_Category_Delete";
+        command.CommandType = CommandType.StoredProcedure;
+
+        command.Parameters.Add(
             new SqlParameter("@Id", id));
 
-        return affectedRows > 0;
+        var result = await command.ExecuteScalarAsync();
+
+        return result != null
+            && result != DBNull.Value
+            && Convert.ToBoolean(result);
     }
+
 }

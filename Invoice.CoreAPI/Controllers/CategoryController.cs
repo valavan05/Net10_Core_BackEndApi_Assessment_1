@@ -17,11 +17,13 @@ public class CategoryController : ControllerBase
 {
     private readonly ICategoryService _service;
 
+    private readonly ILogger<CategoryController> _logger;
 
-    public CategoryController(
-        ICategoryService service)
+    public CategoryController(ICategoryService service, ILogger<CategoryController> logger)
     {
         _service = service;
+        _logger = logger;
+
     }
 
     // ====================================================
@@ -44,6 +46,7 @@ public class CategoryController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error retrieving categories.");
 
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
@@ -91,6 +94,7 @@ public class CategoryController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error retrieving category with Id {CategoryId}.", id);
 
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
@@ -139,6 +143,7 @@ public class CategoryController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error creating category.");
 
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
@@ -200,6 +205,8 @@ public class CategoryController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Error updating category with Id {CategoryId}.", id);
+
 
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
@@ -247,7 +254,7 @@ public class CategoryController : ControllerBase
         }
         catch (Exception ex)
         {
-
+            _logger.LogError( ex,"Error deleting category with Id {CategoryId}.",id);
             return StatusCode(
                 StatusCodes.Status500InternalServerError,
                 new ApiResponse<string>

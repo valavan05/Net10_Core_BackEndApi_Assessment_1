@@ -79,22 +79,6 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "Invoice.CoreAPI.Controllers.LoginController",
-    "Method": "Login",
-    "RelativePath": "api/Login/Login",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "dto",
-        "Type": "Invoice.DTOs.LoginDto",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
     "ContainingType": "Invoice.CoreAPI.Controllers.WeatherForecastController",
     "Method": "Get",
     "RelativePath": "WeatherForecast",
