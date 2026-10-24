@@ -1,248 +1,168 @@
-name: IMS .NET 10 CI Arul sir Assessment 1
- 
+
+name: IMS Category Assessment 1 CI
+
 on:
   push:
     branches:
       - main
       - feature/github-actions-ci
- 
+
   pull_request:
     branches:
       - main
- 
-# Read repository contents.
-# Docker/GHCR push is handled separately in CD.
+
+  workflow_dispatch:
+
 permissions:
   contents: read
- 
+
 jobs:
   build-and-test:
- 
-    runs-on: ubuntu-latest
- 
+    runs-on: ubuntu-24.04
+
     env:
-      SA_PASSWORD: 'Your_Strong!Passw0rd'
-      TEST_DB_CONNECTION: 'Server=localhost,1433;Database=Invoice_Assessment_1_Test;User Id=sa;Password=Your_Strong!Passw0rd;Encrypt=False;TrustServerCertificate=True'
- 
-    # SQL Server service container
+      SA_PASSWORD: 'CI_TestOnly!Pass2026'
+      TEST_DB_CONNECTION: 'Server=localhost,1433;Database=Invoice_Assessment_1_Test;User Id=sa;Password=CI_TestOnly!Pass2026;Encrypt=False;TrustServerCertificate=True'
+      ConnectionStrings__DefaultConnection: 'Server=localhost,1433;Database=Invoice_Assessment_1_Test;User Id=sa;Password=CI_TestOnly!Pass2026;Encrypt=False;TrustServerCertificate=True'
+
+    # Temporary SQL Server for database integration tests.
+    # This does NOT build your application Docker image.
     services:
       sqlserver:
         image: mcr.microsoft.com/mssql/server:2022-latest
- 
         env:
           ACCEPT_EULA: 'Y'
-          MSSQL_SA_PASSWORD: 'Your_Strong!Passw0rd'
+          MSSQL_SA_PASSWORD: 'CI_TestOnly!Pass2026'
           MSSQL_PID: Developer
- 
         ports:
           - 1433:1433
- 
+
     steps:
- 
-      # ---------------------------------------------------------
       # 1. Checkout source code
-      # ---------------------------------------------------------
       - name: Checkout source code
         uses: actions/checkout@v4
- 
-      # ---------------------------------------------------------
-      # 2. Setup .NET 10
-      # ---------------------------------------------------------
+
+      # 2. Install .NET 10 SDK
       - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
- 
-      # ---------------------------------------------------------
-      # 3. Display .NET version
-      # ---------------------------------------------------------
+
+      # 3. Verify SDK
       - name: Display .NET version
         run: dotnet --info
- 
-      # ---------------------------------------------------------
-      # 4. Install sqlcmd
-      # ---------------------------------------------------------
+
+      # 4. Install SQL Server command-line tools
       - name: Install sqlcmd
         shell: bash
         run: |
           set -euo pipefail
- 
+
           curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
-            | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
- 
-          curl -fsSL https://packages.microsoft.com/config/ubuntu/24.04/prod.list \
-            | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null
- 
+            | sudo gpg --dearmor --batch \
+                --yes -o /usr/share/keyrings/microsoft-prod.gpg
+
+          echo "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" \
+            | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
+
           sudo apt-get update
- 
-          sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev
- 
+          sudo ACCEPT_EULA=Y apt-get install -y \
+            mssql-tools18 unixodbc-dev
+
           echo "/opt/mssql-tools18/bin" >> "$GITHUB_PATH"
- 
-      # ---------------------------------------------------------
+
       # 5. Wait for SQL Server
-      # ---------------------------------------------------------
       - name: Wait for SQL Server
         shell: bash
         run: |
-          echo "Waiting for SQL Server..."
- 
+          set -euo pipefail
+
           for i in $(seq 1 40); do
- 
             if sqlcmd \
               -S localhost,1433 \
               -U sa \
               -P "$SA_PASSWORD" \
-              -C \
-              -l 5 \
-              -Q "SELECT 1" > /dev/null 2>&1; then
- 
-              echo "SQL Server is ready after $i attempt(s)."
+              -C -l 5 \
+              -Q "SELECT 1" >/dev/null 2>&1; then
+              echo "SQL Server is ready."
               exit 0
             fi
- 
-            echo "Not ready yet... attempt $i/40"
+
+            echo "Waiting for SQL Server: $i/40"
             sleep 3
           done
- 
-          echo "::error::SQL Server did not become ready in time."
- 
-          docker ps -a
- 
+
+          echo "::error::SQL Server did not become ready."
           exit 1
- 
-      # ---------------------------------------------------------
-      # 6. Create Invoice_Assessment_1_Test database
-      # ---------------------------------------------------------
-      - name: Create Invoice_Test database
+
+      # 6. Create clean Category assessment database
+      - name: Create test database
         shell: bash
         run: |
           set -euo pipefail
- 
+
           sqlcmd \
             -S localhost,1433 \
             -U sa \
             -P "$SA_PASSWORD" \
-            -C \
-            -b \
-            -Q "IF DB_ID('Invoice_Test') IS NULL CREATE DATABASE Invoice_Test"
- 
-      # ---------------------------------------------------------
-      # 7. Initialize Invoice_Assessment_1_Test database
-      # ---------------------------------------------------------
-      - name: Initialize Invoice_Assessment_1_Test database
+            -C -b \
+            -Q "IF DB_ID(N'Invoice_Assessment_1_Test') IS NULL CREATE DATABASE [Invoice_Assessment_1_Test]"
+
+      # 7. Create Category table and stored procedures
+      - name: Initialize Category database
         shell: bash
         run: |
           set -euo pipefail
- 
+
           sqlcmd \
             -S localhost,1433 \
             -U sa \
             -P "$SA_PASSWORD" \
-            -C \
-            -b \
-            -d Invoice_Test \
-            -i "Database/CI/01_Initialize_Invoice_Assessment_1_Test.sql"
- 
-      # ---------------------------------------------------------
-      # 8. Verify database initialization
-      # ---------------------------------------------------------
-      - name: Verify database initialization
+            -C -b \
+            -d Invoice_Assessment_1_Test \
+            -i "Database/CI/01_Initialize_Category_Test.sql"
+
+      # 8. Verify Category table and stored procedures
+      - name: Verify Category database
         shell: bash
         run: |
           set -euo pipefail
- 
-          echo "Checking tables..."
- 
+
           sqlcmd \
             -S localhost,1433 \
             -U sa \
             -P "$SA_PASSWORD" \
-            -C \
-            -b \
-            -d Invoice_Test \
-            -Q "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_SCHEMA, TABLE_NAME"
- 
-          echo "Checking stored procedures..."
- 
-          sqlcmd \
-            -S localhost,1433 \
-            -U sa \
-            -P "$SA_PASSWORD" \
-            -C \
-            -b \
-            -d Invoice_Test \
-            -Q "SET NOCOUNT ON; SELECT COUNT(*) AS StoredProcedureCount FROM sys.procedures"
- 
-      # ---------------------------------------------------------
-      # 9. Restore NuGet dependencies
-      # ---------------------------------------------------------
-      - name: Restore dependencies
-        run: dotnet restore
- 
-      # ---------------------------------------------------------
+            -C -b \
+            -d Invoice_Assessment_1_Test \
+            -Q "IF OBJECT_ID(N'dbo.Category', N'U') IS NULL THROW 50001, 'Category table is missing.', 1;
+                SELECT N'Category table exists' AS Verification;
+                SELECT name AS StoredProcedureName
+                FROM sys.procedures
+                WHERE name LIKE N'sp_Category[_]%'
+                ORDER BY name;"
+
+      # 9. Restore dependencies
+      - name: Restore NuGet packages
+        run: dotnet restore Invoice.sln
+
       # 10. Build solution
-      # ---------------------------------------------------------
       - name: Build solution
-        run: dotnet build --no-restore --configuration Release
- 
-      # ---------------------------------------------------------
-      # 11. Run unit tests with code coverage
-      # ---------------------------------------------------------
-      - name: Run unit tests with coverage
+        run: dotnet build Invoice.sln --configuration Release --no-restore
+
+      # 11. Run all tests
+      - name: Run unit and integration tests
         run: >-
-          dotnet test
-          --no-build
+          dotnet test Invoice.sln
           --configuration Release
-          --collect:"XPlat Code Coverage"
+          --no-build
           --logger "trx;LogFileName=test-results.trx"
           --results-directory ./TestResults
- 
-      # ---------------------------------------------------------
-      # 12. Restore local tools
-      # ---------------------------------------------------------
-      - name: Restore local tools (ReportGenerator)
-        run: dotnet tool restore
- 
-      # ---------------------------------------------------------
-      # 13. Generate coverage report
-      # ---------------------------------------------------------
-      - name: Generate coverage report
-        run: >-
-          dotnet reportgenerator
-          -reports:"TestResults/**/coverage.cobertura.xml"
-          -targetdir:"CoverageReport"
-          -reporttypes:"Html;Cobertura;MarkdownSummaryGithub"
- 
-      # ---------------------------------------------------------
-      # 14. Add coverage summary to GitHub Actions
-      # ---------------------------------------------------------
-      - name: Add coverage summary to job
-        if: always()
-        shell: bash
-        run: |
-          if [ -f "CoverageReport/SummaryGithub.md" ]; then
-            cat "CoverageReport/SummaryGithub.md" >> "$GITHUB_STEP_SUMMARY"
-          fi
- 
-      # ---------------------------------------------------------
-      # 15. Upload test results
-      # ---------------------------------------------------------
+
+      # 12. Upload test results even if tests fail
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: category-test-results
           path: ./TestResults
-          if-no-files-found: ignore
- 
-      # ---------------------------------------------------------
-      # 16. Upload coverage report
-      # ---------------------------------------------------------
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: ./CoverageReport
           if-no-files-found: ignore
