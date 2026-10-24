@@ -1,0 +1,226 @@
+
+name: IMS .NET 10 CI Arul Sir Assessment
+
+on:
+  push:
+    branches:
+      - main
+      - feature/github-actions-ci
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      MSSQL_SA_PASSWORD: ${{ secrets.MSSQL_SA_PASSWORD }}
+      TEST_DB_CONNECTION: "Server=localhost,1433;Database=Invoice_Assessment_1_Test;User Id=sa;Password=${{ secrets.MSSQL_SA_PASSWORD }};Encrypt=False;TrustServerCertificate=True"
+
+    # GitHub Actions automatically runs this SQL Server container.
+    # No local Docker image or container setup is required.
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: ${{ secrets.MSSQL_SA_PASSWORD }}
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
+
+    steps:
+      # 1. Checkout source code
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 2. Setup .NET 10
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # 3. Display .NET version
+      - name: Display .NET version
+        run: dotnet --info
+
+      # 4. Validate required files
+      - name: Validate solution and SQL script
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f "Invoice Management Systems.slnx"
+          test -f "Database/CI/01_Initialize_Invoice_Assessment_1_Test.sql"
+
+          echo "Required files found."
+
+      # 5. Install sqlcmd
+      - name: Install sqlcmd
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+            | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
+
+          curl -fsSL https://packages.microsoft.com/config/ubuntu/24.04/prod.list \
+            | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null
+
+          sudo apt-get update
+
+          sudo ACCEPT_EULA=Y apt-get install -y \
+            mssql-tools18 unixodbc-dev
+
+          echo "/opt/mssql-tools18/bin" >> "$GITHUB_PATH"
+
+      # 6. Wait for SQL Server container
+      - name: Wait for SQL Server
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Waiting for SQL Server..."
+
+          for i in $(seq 1 40); do
+            if sqlcmd \
+              -S localhost,1433 \
+              -U sa \
+              -P "$MSSQL_SA_PASSWORD" \
+              -C -l 5 \
+              -Q "SELECT 1" > /dev/null 2>&1; then
+
+              echo "SQL Server is ready."
+              exit 0
+            fi
+
+            echo "Waiting... attempt $i/40"
+            sleep 3
+          done
+
+          echo "::error::SQL Server did not become ready."
+          exit 1
+
+      # 7. Create test database
+      - name: Create test database
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sqlcmd \
+            -S localhost,1433 \
+            -U sa \
+            -P "$MSSQL_SA_PASSWORD" \
+            -C -b \
+            -Q "IF DB_ID(N'Invoice_Assessment_1_Test') IS NULL CREATE DATABASE [Invoice_Assessment_1_Test];"
+
+      # 8. Initialize test database
+      - name: Initialize test database
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sqlcmd \
+            -S localhost,1433 \
+            -U sa \
+            -P "$MSSQL_SA_PASSWORD" \
+            -C -b \
+            -d Invoice_Assessment_1_Test \
+            -i "Database/CI/01_Initialize_Invoice_Assessment_1_Test.sql"
+
+      # 9. Verify database initialization
+      - name: Verify database initialization
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Checking tables..."
+
+          sqlcmd \
+            -S localhost,1433 \
+            -U sa \
+            -P "$MSSQL_SA_PASSWORD" \
+            -C -b \
+            -d Invoice_Assessment_1_Test \
+            -Q "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_SCHEMA, TABLE_NAME;"
+
+          echo "Checking stored procedures..."
+
+          sqlcmd \
+            -S localhost,1433 \
+            -U sa \
+            -P "$MSSQL_SA_PASSWORD" \
+            -C -b \
+            -d Invoice_Assessment_1_Test \
+            -Q "SELECT name FROM sys.procedures ORDER BY name;"
+
+      # 10. Restore NuGet dependencies
+      - name: Restore dependencies
+        run: dotnet restore "Invoice Management Systems.slnx"
+
+      # 11. Build solution
+      - name: Build solution
+        run: dotnet build "Invoice Management Systems.slnx" --no-restore --configuration Release
+
+      # 12. Run tests with coverage
+      - name: Run tests with code coverage
+        run: >
+          dotnet test "Invoice Management Systems.slnx"
+          --no-build
+          --configuration Release
+          --collect:"XPlat Code Coverage"
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory ./TestResults
+
+      # 13. Install ReportGenerator
+      - name: Install ReportGenerator
+        if: always()
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      # 14. Generate coverage report
+      - name: Generate coverage report
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if find TestResults -name coverage.cobertura.xml -print -quit 2>/dev/null | grep -q .; then
+            reportgenerator \
+              "-reports:TestResults/**/coverage.cobertura.xml" \
+              "-targetdir:CoverageReport" \
+              "-reporttypes:Html;Cobertura;MarkdownSummaryGithub"
+          else
+            echo "No coverage report was generated."
+          fi
+
+      # 15. Add coverage summary
+      - name: Add coverage summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "CoverageReport/SummaryGithub.md" ]; then
+            cat "CoverageReport/SummaryGithub.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # 16. Upload test results
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/
+          if-no-files-found: ignore
+
+      # 17. Upload coverage report
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: CoverageReport/
+          if-no-files-found: ignore

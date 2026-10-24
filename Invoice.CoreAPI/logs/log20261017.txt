@@ -1,0 +1,41 @@
+2026-10-17 17:12:42.842 +05:30 [INF] User profile is available. Using 'C:\Users\VALAVAN S\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-10-17 17:12:43.153 +05:30 [INF] Now listening on: http://localhost:5129
+2026-10-17 17:12:43.209 +05:30 [INF] Application started. Press Ctrl+C to shut down.
+2026-10-17 17:12:43.209 +05:30 [INF] Hosting environment: Development
+2026-10-17 17:12:43.209 +05:30 [INF] Content root path: D:\IMSAssessment1\Invoice Management Systems\Invoice.CoreAPI
+2026-10-17 17:12:44.207 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/swagger/index.html - null null
+2026-10-17 17:12:44.388 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/swagger/index.html - 304 null null 190.2922ms
+2026-10-17 17:12:44.396 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/swagger/swagger-ui.css - null null
+2026-10-17 17:12:44.396 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/swagger/swagger-ui-bundle.js - null null
+2026-10-17 17:12:44.396 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/_framework/aspnetcore-browser-refresh.js - null null
+2026-10-17 17:12:44.396 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/swagger/swagger-ui-standalone-preset.js - null null
+2026-10-17 17:12:44.396 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/swagger/index.css - null null
+2026-10-17 17:12:44.397 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/swagger/index.js - null null
+2026-10-17 17:12:44.400 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/swagger/index.js - 304 null null 3.2203ms
+2026-10-17 17:12:44.404 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/_framework/aspnetcore-browser-refresh.js - 200 14935 application/javascript; charset=utf-8 8.4078ms
+2026-10-17 17:12:44.443 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/swagger/swagger-ui-bundle.js - 304 null null 46.7964ms
+2026-10-17 17:12:44.443 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/swagger/swagger-ui-standalone-preset.js - 304 null null 46.8053ms
+2026-10-17 17:12:44.443 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/swagger/index.css - 304 null null 46.8286ms
+2026-10-17 17:12:44.443 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/swagger/swagger-ui.css - 304 null null 47.4624ms
+2026-10-17 17:12:44.469 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/_vs/browserLink - null null
+2026-10-17 17:12:44.493 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/_vs/browserLink - 200 null text/javascript; charset=UTF-8 24.1967ms
+2026-10-17 17:12:44.514 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/swagger/v1/swagger.json - null null
+2026-10-17 17:12:44.521 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 7.599ms
+2026-10-17 17:12:51.303 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/api/Category/GetAll - null null
+2026-10-17 17:12:51.407 +05:30 [INF] Executing endpoint 'Invoice.CoreAPI.Controllers.CategoryController.GetAll (Invoice.CoreAPI)'
+2026-10-17 17:12:51.465 +05:30 [INF] Route matched with {action = "GetAll", controller = "Category"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetAll() on controller Invoice.CoreAPI.Controllers.CategoryController (Invoice.CoreAPI).
+2026-10-17 17:12:54.532 +05:30 [INF] Executed DbCommand (88ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+EXEC sp_Category_GetAll
+2026-10-17 17:12:54.855 +05:30 [INF] Executing OkObjectResult, writing value of type 'Invoice.Model.ApiResponse`1[[System.Collections.Generic.IEnumerable`1[[Invoice.DTOs.CategoryDto, Invoice.DTOs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-10-17 17:12:54.910 +05:30 [INF] Executed action Invoice.CoreAPI.Controllers.CategoryController.GetAll (Invoice.CoreAPI) in 3436.805ms
+2026-10-17 17:12:54.911 +05:30 [INF] Executed endpoint 'Invoice.CoreAPI.Controllers.CategoryController.GetAll (Invoice.CoreAPI)'
+2026-10-17 17:12:54.934 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/api/Category/GetAll - 200 null application/json; charset=utf-8 3631.2817ms
+2026-10-17 17:13:16.052 +05:30 [INF] Request starting HTTP/1.1 GET http://localhost:5129/api/Category/GetById/5 - null null
+2026-10-17 17:13:16.054 +05:30 [INF] Executing endpoint 'Invoice.CoreAPI.Controllers.CategoryController.GetById (Invoice.CoreAPI)'
+2026-10-17 17:13:16.094 +05:30 [INF] Route matched with {action = "GetById", controller = "Category"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetById(Int32) on controller Invoice.CoreAPI.Controllers.CategoryController (Invoice.CoreAPI).
+2026-10-17 17:13:16.273 +05:30 [INF] Executed DbCommand (66ms) [Parameters=[@Id='?' (DbType = Int32)], CommandType='"Text"', CommandTimeout='30']
+EXEC sp_Category_GetById @Id
+2026-10-17 17:13:16.281 +05:30 [INF] Executing OkObjectResult, writing value of type 'Invoice.Model.ApiResponse`1[[Invoice.DTOs.CategoryDto, Invoice.DTOs, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-10-17 17:13:16.286 +05:30 [INF] Executed action Invoice.CoreAPI.Controllers.CategoryController.GetById (Invoice.CoreAPI) in 192.1046ms
+2026-10-17 17:13:16.286 +05:30 [INF] Executed endpoint 'Invoice.CoreAPI.Controllers.CategoryController.GetById (Invoice.CoreAPI)'
+2026-10-17 17:13:16.287 +05:30 [INF] Request finished HTTP/1.1 GET http://localhost:5129/api/Category/GetById/5 - 200 null application/json; charset=utf-8 234.7632ms

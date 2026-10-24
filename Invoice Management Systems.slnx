@@ -1,3 +1,11 @@
 <Solution>
+  <Project Path="Invoice.BAL.Test/Invoice.BAL.Test.csproj" Id="035ff5a0-f301-4771-91f9-9603f62fa60a" />
+  <Project Path="Invoice.BAL/Invoice.BAL.csproj" Id="f6ce604b-9eb9-4335-827d-6f8576895f48" />
+  <Project Path="Invoice.CoreAPI.Test/Invoice.CoreAPI.Test.csproj" Id="9ffa1efa-3850-42e2-9c4d-24b4e61bfdff" />
   <Project Path="Invoice.CoreAPI/Invoice.CoreAPI.csproj" />
+  <Project Path="Invoice.DAL.Test/Invoice.DAL.Test.csproj" Id="35e5cd1e-26f0-4069-9d50-8a89ebb0acfb" />
+  <Project Path="Invoice.DAL/Invoice.DAL.csproj" Id="7f5394b6-61c9-4dcb-af55-9b9ba36035b9" />
+  <Project Path="Invoice.Data/Invoice.Data.csproj" Id="1b0c5b2a-8029-4e11-afca-a385d7c92bd2" />
+  <Project Path="Invoice.DTOs/Invoice.DTOs.csproj" Id="fbe21019-a855-4284-a199-af15e9c5bdd6" />
+  <Project Path="Invoice.Model/Invoice.Model.csproj" Id="92964102-3fea-4655-acc4-badc989e36a0" />
 </Solution>

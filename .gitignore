@@ -1,0 +1,18 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+
+# Build files
+bin/
+obj/
+**/bin/
+**/obj/
+
+ 
+TestResults/
+coveragereport/
+CoverageReport/

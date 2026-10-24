@@ -1,0 +1,16 @@
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\bin\Debug\net10.0\Invoice.Data.deps.json
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\bin\Debug\net10.0\Invoice.Data.runtimeconfig.json
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\bin\Debug\net10.0\Invoice.Data.dll
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\bin\Debug\net10.0\Invoice.Data.pdb
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\Invoice.Data.csproj.AssemblyReference.cache
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\Invoice.Data.GeneratedMSBuildEditorConfig.editorconfig
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\Invoice.Data.AssemblyInfoInputs.cache
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\Invoice.Data.AssemblyInfo.cs
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\Invoice.Data.csproj.CoreCompileInputs.cache
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\Invoice.Data.sourcelink.json
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\Invoice.Data.dll
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\refint\Invoice.Data.dll
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\Invoice.Data.pdb
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\Invoice.Data.genruntimeconfig.cache
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\ref\Invoice.Data.dll
+D:\IMSAssessment1\Invoice Management Systems\Invoice.Data\obj\Debug\net10.0\Invoice..864A5CBF.Up2Date
