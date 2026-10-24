@@ -1,168 +1,128 @@
-
-name: IMS Category Assessment 1 CI
-
-on:
-  push:
-    branches:
-      - main
-      - feature/github-actions-ci
-
-  pull_request:
-    branches:
-      - main
-
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-jobs:
-  build-and-test:
-    runs-on: ubuntu-24.04
-
-    env:
-      SA_PASSWORD: 'CI_TestOnly!Pass2026'
-      TEST_DB_CONNECTION: 'Server=localhost,1433;Database=Invoice_Assessment_1_Test;User Id=sa;Password=CI_TestOnly!Pass2026;Encrypt=False;TrustServerCertificate=True'
-      ConnectionStrings__DefaultConnection: 'Server=localhost,1433;Database=Invoice_Assessment_1_Test;User Id=sa;Password=CI_TestOnly!Pass2026;Encrypt=False;TrustServerCertificate=True'
-
-    # Temporary SQL Server for database integration tests.
-    # This does NOT build your application Docker image.
-    services:
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        env:
-          ACCEPT_EULA: 'Y'
-          MSSQL_SA_PASSWORD: 'CI_TestOnly!Pass2026'
-          MSSQL_PID: Developer
-        ports:
-          - 1433:1433
-
-    steps:
-      # 1. Checkout source code
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      # 2. Install .NET 10 SDK
-      - name: Setup .NET 10
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
-      # 3. Verify SDK
-      - name: Display .NET version
-        run: dotnet --info
-
-      # 4. Install SQL Server command-line tools
-      - name: Install sqlcmd
         shell: bash
         run: |
           set -euo pipefail
-
           curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
-            | sudo gpg --dearmor --batch \
-                --yes -o /usr/share/keyrings/microsoft-prod.gpg
-
-          echo "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/24.04/prod noble main" \
-            | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
-
+            | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
+          curl -fsSL https://packages.microsoft.com/config/ubuntu/24.04/prod.list \
+            | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null
           sudo apt-get update
-          sudo ACCEPT_EULA=Y apt-get install -y \
-            mssql-tools18 unixodbc-dev
-
+          sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev
           echo "/opt/mssql-tools18/bin" >> "$GITHUB_PATH"
 
-      # 5. Wait for SQL Server
+      # 6. Wait for SQL Server
       - name: Wait for SQL Server
         shell: bash
         run: |
           set -euo pipefail
-
+          echo "Waiting for SQL Server..."
           for i in $(seq 1 40); do
-            if sqlcmd \
-              -S localhost,1433 \
-              -U sa \
-              -P "$SA_PASSWORD" \
-              -C -l 5 \
-              -Q "SELECT 1" >/dev/null 2>&1; then
+            if sqlcmd -S localhost,1433 -U sa -P "$MSSQL_SA_PASSWORD" -C -l 5 -Q "SELECT 1" >/dev/null 2>&1; then
               echo "SQL Server is ready."
               exit 0
             fi
-
-            echo "Waiting for SQL Server: $i/40"
+            echo "SQL Server is not ready yet ($i/40)."
             sleep 3
           done
-
-          echo "::error::SQL Server did not become ready."
+          echo "::error::SQL Server did not become ready in time."
+          docker ps -a
           exit 1
 
-      # 6. Create clean Category assessment database
+      # 7. Create the dedicated CI test database
       - name: Create test database
         shell: bash
         run: |
           set -euo pipefail
-
           sqlcmd \
             -S localhost,1433 \
             -U sa \
-            -P "$SA_PASSWORD" \
+            -P "$MSSQL_SA_PASSWORD" \
             -C -b \
-            -Q "IF DB_ID(N'Invoice_Assessment_1_Test') IS NULL CREATE DATABASE [Invoice_Assessment_1_Test]"
+            -Q "IF DB_ID(N'Invoice_Assessment_1_Test') IS NULL CREATE DATABASE [Invoice_Assessment_1_Test];"
 
-      # 7. Create Category table and stored procedures
-      - name: Initialize Category database
+      # 8. Run the database setup script
+      - name: Initialize test database
         shell: bash
         run: |
           set -euo pipefail
-
           sqlcmd \
             -S localhost,1433 \
             -U sa \
-            -P "$SA_PASSWORD" \
+            -P "$MSSQL_SA_PASSWORD" \
             -C -b \
             -d Invoice_Assessment_1_Test \
             -i "Database/CI/01_Initialize_Invoice_Assessment_1_Test.sql"
 
-      # 8. Verify Category table and stored procedures
-      - name: Verify Category database
+      # 9. Verify database objects
+      - name: Verify database initialization
         shell: bash
         run: |
           set -euo pipefail
+          echo "Tables:"
+          sqlcmd -S localhost,1433 -U sa -P "$MSSQL_SA_PASSWORD" -C -b -d Invoice_Assessment_1_Test \
+            -Q "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_SCHEMA, TABLE_NAME;"
+          echo "Stored procedures:"
+          sqlcmd -S localhost,1433 -U sa -P "$MSSQL_SA_PASSWORD" -C -b -d Invoice_Assessment_1_Test \
+            -Q "SELECT SCHEMA_NAME(schema_id) AS SchemaName, name AS ProcedureName FROM sys.procedures ORDER BY name;"
 
-          sqlcmd \
-            -S localhost,1433 \
-            -U sa \
-            -P "$SA_PASSWORD" \
-            -C -b \
-            -d Invoice_Assessment_1_Test \
-            -Q "IF OBJECT_ID(N'dbo.Category', N'U') IS NULL THROW 50001, 'Category table is missing.', 1;
-                SELECT N'Category table exists' AS Verification;
-                SELECT name AS StoredProcedureName
-                FROM sys.procedures
-                WHERE name LIKE N'sp_Category[_]%'
-                ORDER BY name;"
+      # 10. Restore NuGet dependencies
+      - name: Restore dependencies
+        run: dotnet restore "Invoice Management Systems.slnx"
 
-      # 9. Restore dependencies
-      - name: Restore NuGet packages
-        run: dotnet restore Invoice.sln
-
-      # 10. Build solution
+      # 11. Build the solution
       - name: Build solution
-        run: dotnet build Invoice.sln --configuration Release --no-restore
+        run: dotnet build "Invoice Management Systems.slnx" --no-restore --configuration Release
 
-      # 11. Run all tests
-      - name: Run unit and integration tests
+      # 12. Run tests and collect coverage
+      - name: Run tests with code coverage
         run: >-
-          dotnet test Invoice.sln
-          --configuration Release
+          dotnet test "Invoice Management Systems.slnx"
           --no-build
+          --configuration Release
+          --collect:"XPlat Code Coverage"
           --logger "trx;LogFileName=test-results.trx"
           --results-directory ./TestResults
 
-      # 12. Upload test results even if tests fail
+      # 13. Install ReportGenerator
+      - name: Install ReportGenerator
+        if: always()
+        shell: bash
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool
+
+      # 14. Generate coverage report
+      - name: Generate coverage report
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if find TestResults -name coverage.cobertura.xml -print -quit 2>/dev/null | grep -q .; then
+            reportgenerator \
+              "-reports:TestResults/**/coverage.cobertura.xml" \
+              "-targetdir:CoverageReport" \
+              "-reporttypes:Html;Cobertura;MarkdownSummaryGithub"
+          else
+            echo "No Cobertura coverage file was generated."
+          fi
+
+      # 15. Add coverage summary to GitHub Actions
+      - name: Add coverage summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "CoverageReport/SummaryGithub.md" ]; then
+            cat "CoverageReport/SummaryGithub.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # 16. Upload test results
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: category-test-results
-          path: ./TestResults
+          name: test-results
+          path: TestResults/
           if-no-files-found: ignore
+
+      # 17. Upload coverage report
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
