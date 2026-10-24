@@ -22,6 +22,8 @@ jobs:
       MSSQL_SA_PASSWORD: ${{ secrets.MSSQL_SA_PASSWORD }}
       TEST_DB_CONNECTION: "Server=localhost,1433;Database=Invoice_Assessment_1_Test;User Id=sa;Password=${{ secrets.MSSQL_SA_PASSWORD }};Encrypt=False;TrustServerCertificate=True"
 
+    # GitHub Actions automatically runs this SQL Server container.
+    # No local Docker image or container setup is required.
     services:
       sqlserver:
         image: mcr.microsoft.com/mssql/server:2022-latest
@@ -52,8 +54,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
           test -f "Invoice Management Systems.slnx"
           test -f "Database/CI/01_Initialize_Invoice_Assessment_1_Test.sql"
+
           echo "Required files found."
 
       # 5. Install sqlcmd
@@ -69,11 +73,13 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null
 
           sudo apt-get update
-          sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev
+
+          sudo ACCEPT_EULA=Y apt-get install -y \
+            mssql-tools18 unixodbc-dev
 
           echo "/opt/mssql-tools18/bin" >> "$GITHUB_PATH"
 
-      # 6. Wait for SQL Server
+      # 6. Wait for SQL Server container
       - name: Wait for SQL Server
         shell: bash
         run: |
@@ -98,7 +104,6 @@ jobs:
           done
 
           echo "::error::SQL Server did not become ready."
-          docker ps -a
           exit 1
 
       # 7. Create test database
@@ -154,7 +159,7 @@ jobs:
             -d Invoice_Assessment_1_Test \
             -Q "SELECT name FROM sys.procedures ORDER BY name;"
 
-      # 10. Restore NuGet packages
+      # 10. Restore NuGet dependencies
       - name: Restore dependencies
         run: dotnet restore "Invoice Management Systems.slnx"
 
