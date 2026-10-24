@@ -120,7 +120,7 @@ jobs:
             -P "$SA_PASSWORD" \
             -C -b \
             -d Invoice_Assessment_1_Test \
-            -i "Database/CI/01_Initialize_Category_Test.sql"
+            -i "Database/CI/01_Initialize_Invoice_Assessment_1_Test.sql"
 
       # 8. Verify Category table and stored procedures
       - name: Verify Category database
