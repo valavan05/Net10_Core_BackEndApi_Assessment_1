@@ -112,7 +112,7 @@ jobs:
           exit 1
  
       # ---------------------------------------------------------
-      # 6. Create Invoice_Test database
+      # 6. Create Invoice_Assessment_1_Test database
       # ---------------------------------------------------------
       - name: Create Invoice_Test database
         shell: bash
@@ -128,7 +128,7 @@ jobs:
             -Q "IF DB_ID('Invoice_Test') IS NULL CREATE DATABASE Invoice_Test"
  
       # ---------------------------------------------------------
-      # 7. Initialize Invoice_Test database
+      # 7. Initialize Invoice_Assessment_1_Test database
       # ---------------------------------------------------------
       - name: Initialize Invoice_Test database
         shell: bash
