@@ -130,7 +130,7 @@ jobs:
       # ---------------------------------------------------------
       # 7. Initialize Invoice_Assessment_1_Test database
       # ---------------------------------------------------------
-      - name: Initialize Invoice_Test database
+      - name: Initialize Invoice_Assessment_1_Test database
         shell: bash
         run: |
           set -euo pipefail
@@ -142,7 +142,7 @@ jobs:
             -C \
             -b \
             -d Invoice_Test \
-            -i "Database/CI/01_Initialize_Invoice_Test.sql"
+            -i "Database/CI/01_Initialize_Invoice_Assessment_1_Test.sql"
  
       # ---------------------------------------------------------
       # 8. Verify database initialization
